@@ -69,7 +69,7 @@ export default function RootLayoutNav() {
                 <Text
                   style={{ color: "#fff", fontWeight: "bold", fontSize: 24 }}
                 >
-                  Start a Chat
+                  Start a New Group
                 </Text>
               </View>
             ),
