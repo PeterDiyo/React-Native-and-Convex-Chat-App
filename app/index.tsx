@@ -6,13 +6,30 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Link } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Dialog from "../components/Dialog";
 
 const Page = () => {
   const groups = useQuery(api.groups.get) || [];
+  const [name, setName] = useState("");
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const user = await AsyncStorage.getItem("user");
+      if (!user) {
+        setTimeout(() => {
+          setVisible(true);
+        }, 100);
+      } else {
+        setName(user);
+      }
+    };
+  }, []);
 
   return (
     <View style={{ flex: 1 }}>
@@ -43,6 +60,7 @@ const Page = () => {
           </Link>
         ))}
       </ScrollView>
+      <Dialog.container visible={visible}></Dialog.container>
     </View>
   );
 };
