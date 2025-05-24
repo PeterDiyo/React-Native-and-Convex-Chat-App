@@ -1,22 +1,67 @@
-import { View, Text, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+} from "react-native";
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Link } from "expo-router";
 
 const Page = () => {
   const groups = useQuery(api.groups.get) || [];
 
   return (
-    <View style={{ flex: 1, padding: 16 }}>
-      <ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
         {groups.map((group) => (
-          <View key={group._id}>
-            <Text style={{ padding: 2, fontSize: 16 }}>{group.name}</Text>
-          </View>
+          <Link
+            href={{
+              pathname: "/(chat)/[chatid]",
+              params: { chatid: group._id },
+            }}
+            key={group._id.toString()}
+            asChild
+          >
+            <TouchableOpacity style={styles.group}>
+              <Image
+                source={{ uri: group.icon_url }}
+                style={{ width: 50, height: 50 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontWeight: 500, fontSize: 15 }}>
+                  {group.name}
+                </Text>
+                <Text style={{ color: "#666" }}>
+                  {group.description || "No description"}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </Link>
         ))}
       </ScrollView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 10,
+  },
+  group: {
+    flexDirection: "row",
+    gap: 10,
+    alignItems: "center",
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: "#fff",
+  },
+});
 
 export default Page;
