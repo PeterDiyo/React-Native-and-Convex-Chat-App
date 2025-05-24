@@ -7,12 +7,11 @@ const Page = () => {
   const groups = useQuery(api.groups.get) || [];
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+    <View style={{ flex: 1, padding: 20 }}>
       <ScrollView>
         {groups.map((group) => (
           <View key={group._id}>
-            <Text>{group.name}</Text>
-            <Text>{group.description}</Text>
+            <Text style={{ padding: 4, fontSize: 16 }}>{group.name}</Text>
           </View>
         ))}
       </ScrollView>
