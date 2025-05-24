@@ -80,6 +80,14 @@ export default function RootLayoutNav() {
             gestureDirection: "vertical",
           }}
         />
+        <Stack.Screen
+          name="(chat)/[chatid]"
+          options={{
+            headerTitle: "Test Chat",
+            headerStyle: { backgroundColor: "#4169e1" }, // royal blue
+            headerTintColor: "#fff",
+          }}
+        />
       </Stack>
     </ConvexProvider>
   );
