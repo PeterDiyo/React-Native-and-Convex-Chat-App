@@ -83,7 +83,7 @@ export default function RootLayoutNav() {
         <Stack.Screen
           name="(chat)/[chatid]"
           options={{
-            headerTitle: "Test Chat",
+            headerTitle: "",
             headerStyle: { backgroundColor: "#4169e1" }, // royal blue
             headerTintColor: "#fff",
           }}
