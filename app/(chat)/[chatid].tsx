@@ -9,8 +9,9 @@ import {
   TouchableOpacity,
   ListRenderItem,
   FlatList,
+  Keyboard,
 } from "react-native";
-import React, { use, useEffect, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useConvex, useMutation, useQuery } from "convex/react";
@@ -29,6 +30,8 @@ const Page = () => {
   const addMessage = useMutation(api.messages.sendMessage);
   const messages =
     useQuery(api.messages.get, { chatId: chatid as Id<"groups"> }) || [];
+
+  const listRef = useRef<FlatList>(null);
 
   // Load group information from Convex
   useEffect(() => {
@@ -52,7 +55,14 @@ const Page = () => {
     loadUser();
   }, []);
 
+  useEffect(() => {
+    setTimeout(() => {
+      listRef.current?.scrollToEnd({ animated: true });
+    }, 300);
+  }, [messages]);
+
   const handleSendMessage = () => {
+    Keyboard.dismiss();
     addMessage({
       group_id: chatid as Id<"groups">,
       content: newMessage,
@@ -65,8 +75,27 @@ const Page = () => {
     const isUserMessage = item.user === user;
 
     return (
-      <View>
-        <Text>{item.content}</Text>
+      <View
+        style={[
+          styles.messageContainer,
+          isUserMessage
+            ? styles.userMessageContainer
+            : styles.otherMessageContainer,
+          styles.messageShadow,
+        ]}
+      >
+        <Text
+          style={[styles.messageText, isUserMessage && styles.userMessageText]}
+        >
+          {item.content}
+        </Text>
+        <Text style={styles.timestamp}>
+          {new Date(item._creationTime).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}{" "}
+          - {item.user}
+        </Text>
       </View>
     );
   };
@@ -76,12 +105,14 @@ const Page = () => {
       <KeyboardAvoidingView
         style={[styles.container, { flex: 1 }]}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={80}
+        keyboardVerticalOffset={100}
       >
         {/* TODO: Drag ons */}
         <View style={{ flex: 1 }}>
           {/* Messages list */}
           <FlatList
+            ref={listRef}
+            ListFooterComponent={<View style={{ padding: 10 }} />}
             data={messages}
             renderItem={renderMessage}
             keyExtractor={(item) => item._id.toString()}
@@ -142,6 +173,42 @@ const styles = StyleSheet.create({
     padding: 10,
     justifyContent: "center",
     alignItems: "center",
+  },
+  messageContainer: {
+    padding: 12,
+    borderRadius: 16,
+    marginTop: 10,
+    marginHorizontal: 10,
+    maxWidth: "80%",
+  },
+  userMessageContainer: {
+    backgroundColor: "#4169e1",
+    alignSelf: "flex-end",
+    borderTopRightRadius: 4,
+  },
+  otherMessageContainer: {
+    alignSelf: "flex-start",
+    backgroundColor: "#f0f0f0",
+    borderTopLeftRadius: 4,
+  },
+  messageShadow: {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  messageText: {
+    fontSize: 16,
+    flexWrap: "wrap",
+    color: "#222",
+  },
+  userMessageText: {
+    color: "#fff",
+  },
+  timestamp: {
+    fontSize: 12,
+    color: "#c7c7c7",
   },
 });
 
