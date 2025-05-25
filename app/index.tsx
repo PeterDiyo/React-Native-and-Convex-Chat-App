@@ -29,7 +29,16 @@ const Page = () => {
         setName(user);
       }
     };
+    loadUser();
   }, []);
+
+  const setUser = async () => {
+    let r = (Math.random() + 1).toString(36).substring(7);
+    const userName = `${name}#${r}`;
+    await AsyncStorage.setItem("user", userName);
+    setName(userName);
+    setVisible(false);
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -60,7 +69,19 @@ const Page = () => {
           </Link>
         ))}
       </ScrollView>
-      <Dialog.container visible={visible}></Dialog.container>
+      <Dialog.container visible={visible}>
+        <Dialog.title>user name required</Dialog.title>
+        <Dialog.description>
+          Please enter your name to continue
+        </Dialog.description>
+        <Dialog.input
+          value={name}
+          onChangeText={setName}
+          placeholder="Enter your name"
+        />
+        <Dialog.button onPress={setUser} />
+        <Dialog.close onPress={() => setVisible(false)} />
+      </Dialog.container>
     </View>
   );
 };

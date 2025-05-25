@@ -8,60 +8,30 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface DialogContainerProps {
+// Container component
+const DialogContainer: React.FC<{
   visible: boolean;
-  onClose?: () => void;
-}
+  children: React.ReactNode;
+}> = ({ visible, children }) => (
+  <Modal visible={visible} transparent animationType="slide">
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <View style={styles.content}>{children}</View>
+    </KeyboardAvoidingView>
+  </Modal>
+);
 
-const Dialog: any = () => null;
-
-const DialogContainer: React.FC<DialogContainerProps> = ({
-  visible,
-  onClose,
-}) => {
-  const [name, setName] = React.useState("");
-
-  const handleSubmit = async () => {
-    if (name.trim().length > 0) {
-      try {
-        await AsyncStorage.setItem("user", name);
-        onClose?.();
-      } catch (error) {
-        console.error("Error saving name:", error);
-      }
-    }
-  };
-
-  return (
-    <Modal visible={visible} transparent animationType="slide">
-      <KeyboardAvoidingView behavior="padding" style={styles.container}>
-        <View style={styles.content}>
-          <DialogTitle>Welcome!</DialogTitle>
-          <DialogDescription>
-            Please enter your name to continue
-          </DialogDescription>
-          <DialogInput
-            value={name}
-            onChangeText={setName}
-            placeholder="Enter your name"
-          />
-          <DialogButton onPress={handleSubmit} />
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-  );
-};
-
+// Title component
 const DialogTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <Text style={styles.title}>{children}</Text>
 );
 
+// Description component
 const DialogDescription: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => <Text style={styles.message}>{children}</Text>;
 
+// Input component
 const DialogInput: React.FC<{
   value: string;
   onChangeText: (text: string) => void;
@@ -75,9 +45,23 @@ const DialogInput: React.FC<{
   />
 );
 
-const DialogButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
+// Button component
+const DialogButton: React.FC<{
+  onPress: () => void;
+  children?: React.ReactNode;
+}> = ({ onPress, children }) => (
   <TouchableOpacity style={styles.button} onPress={onPress}>
-    <Text style={styles.buttonText}>Continue</Text>
+    <Text style={styles.buttonText}>{children || "Continue"}</Text>
+  </TouchableOpacity>
+);
+
+// Close button component
+const DialogClose: React.FC<{ onPress: () => void }> = ({ onPress }) => (
+  <TouchableOpacity
+    style={[styles.button, { backgroundColor: "#aaa", marginTop: 8 }]}
+    onPress={onPress}
+  >
+    <Text style={styles.buttonText}>Close</Text>
   </TouchableOpacity>
 );
 
@@ -129,10 +113,13 @@ const styles = StyleSheet.create({
   },
 });
 
-Dialog.container = DialogContainer;
-Dialog.title = DialogTitle;
-Dialog.description = DialogDescription;
-Dialog.input = DialogInput;
-Dialog.button = DialogButton;
+const Dialog = {
+  container: DialogContainer,
+  title: DialogTitle,
+  description: DialogDescription,
+  input: DialogInput,
+  button: DialogButton,
+  close: DialogClose,
+};
 
 export default Dialog;
