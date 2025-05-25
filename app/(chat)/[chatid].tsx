@@ -10,6 +10,7 @@ import {
   ListRenderItem,
   FlatList,
   Keyboard,
+  Image,
 } from "react-native";
 import React, { use, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -18,6 +19,7 @@ import { useConvex, useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 
 const Page = () => {
   const { chatid } = useLocalSearchParams();
@@ -25,6 +27,8 @@ const Page = () => {
   const convex = useConvex();
   const navigation = useNavigation();
   const [newMessage, setNewMessage] = useState("");
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   // Send and load messages for the chat
   const addMessage = useMutation(api.messages.sendMessage);
@@ -63,11 +67,16 @@ const Page = () => {
 
   const handleSendMessage = () => {
     Keyboard.dismiss();
-    addMessage({
-      group_id: chatid as Id<"groups">,
-      content: newMessage,
-      user: user || "Anonymous",
-    });
+
+    if (selectedImage) {
+    } else {
+      addMessage({
+        group_id: chatid as Id<"groups">,
+        content: newMessage,
+        user: user || "Anonymous",
+      });
+    }
+
     setNewMessage("");
   };
 
@@ -100,6 +109,17 @@ const Page = () => {
     );
   };
 
+  const captureImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      quality: 1,
+      allowsEditing: true,
+    });
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setSelectedImage(uri);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#fff" }}>
       <KeyboardAvoidingView
@@ -107,7 +127,6 @@ const Page = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={100}
       >
-        {/* TODO: Drag ons */}
         <View style={{ flex: 1 }}>
           {/* Messages list */}
           <FlatList
@@ -121,22 +140,44 @@ const Page = () => {
 
         {/* Bottom input */}
         <View style={styles.input}>
-          <View style={{ flexDirection: "row" }}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Type a message..."
-              value={newMessage}
-              onChangeText={setNewMessage}
-              multiline={true}
-              numberOfLines={4}
-            />
-            <TouchableOpacity
-              style={styles.sendButton}
-              onPress={handleSendMessage}
-              disabled={newMessage === ""}
-            >
-              <Ionicons name="send-outline" size={24} color="#fff"></Ionicons>
-            </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            {selectedImage && (
+              <View style={styles.selectedImageContainer}>
+                <Image
+                  source={{ uri: selectedImage }}
+                  style={styles.selectedImage}
+                />
+                <TouchableOpacity
+                  style={styles.removeImageButton}
+                  onPress={() => setSelectedImage(null)}
+                >
+                  <Ionicons name="close-circle" size={20} color="#666" />
+                </TouchableOpacity>
+              </View>
+            )}
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Type a message..."
+                value={newMessage}
+                onChangeText={setNewMessage}
+                multiline={true}
+                numberOfLines={4}
+              />
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={captureImage}
+              >
+                <Ionicons name="image" size={24} color="#fff" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.sendButton}
+                onPress={handleSendMessage}
+                disabled={newMessage === "" && !selectedImage}
+              >
+                <Ionicons name="send-outline" size={24} color="#fff" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -156,6 +197,31 @@ const styles = StyleSheet.create({
     padding: 10,
     borderTopWidth: 0.5,
     borderColor: "#ccc",
+  },
+  inputContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  selectedImageContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  selectedImage: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    borderRadius: 8,
+  },
+  removeImageButton: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    padding: 4,
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   textInput: {
     flex: 1,
