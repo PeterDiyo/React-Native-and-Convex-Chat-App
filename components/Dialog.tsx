@@ -10,18 +10,14 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface DialogProps {
+interface DialogContainerProps {
   visible: boolean;
   onClose?: () => void;
-  onSubmit?: (name: string) => void;
 }
 
-const Dialog = () => {
-  return null; // Placeholder for the actual dialog component
-};
+const Dialog: any = () => null;
 
-// Container component that handles the modal logic
-const DialogContainer: React.FC<{ visible: boolean; onClose?: () => void }> = ({
+const DialogContainer: React.FC<DialogContainerProps> = ({
   visible,
   onClose,
 }) => {
@@ -39,25 +35,51 @@ const DialogContainer: React.FC<{ visible: boolean; onClose?: () => void }> = ({
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="slide">
       <KeyboardAvoidingView behavior="padding" style={styles.container}>
         <View style={styles.content}>
-          <Text style={styles.title}>Welcome!</Text>
-          <Text style={styles.message}>Please enter your name to continue</Text>
-          <TextInput
-            style={styles.input}
+          <DialogTitle>Welcome!</DialogTitle>
+          <DialogDescription>
+            Please enter your name to continue
+          </DialogDescription>
+          <DialogInput
             value={name}
             onChangeText={setName}
             placeholder="Enter your name"
           />
-          <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
+          <DialogButton onPress={handleSubmit} />
         </View>
       </KeyboardAvoidingView>
     </Modal>
   );
 };
+
+const DialogTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <Text style={styles.title}>{children}</Text>
+);
+
+const DialogDescription: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => <Text style={styles.message}>{children}</Text>;
+
+const DialogInput: React.FC<{
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+}> = ({ value, onChangeText, placeholder }) => (
+  <TextInput
+    style={styles.input}
+    value={value}
+    onChangeText={onChangeText}
+    placeholder={placeholder}
+  />
+);
+
+const DialogButton: React.FC<{ onPress: () => void }> = ({ onPress }) => (
+  <TouchableOpacity style={styles.button} onPress={onPress}>
+    <Text style={styles.buttonText}>Continue</Text>
+  </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -77,11 +99,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#000",
   },
   message: {
     fontSize: 16,
     marginBottom: 20,
     textAlign: "center",
+    color: "#666",
   },
   input: {
     borderWidth: 1,
@@ -106,5 +130,9 @@ const styles = StyleSheet.create({
 });
 
 Dialog.container = DialogContainer;
+Dialog.title = DialogTitle;
+Dialog.description = DialogDescription;
+Dialog.input = DialogInput;
+Dialog.button = DialogButton;
 
 export default Dialog;
