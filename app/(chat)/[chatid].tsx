@@ -11,6 +11,7 @@ import {
   FlatList,
   Keyboard,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import React, { use, useEffect, useRef, useState } from "react";
 import { useLocalSearchParams, useNavigation } from "expo-router";
@@ -65,10 +66,33 @@ const Page = () => {
     }, 300);
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     Keyboard.dismiss();
 
     if (selectedImage) {
+      setUploading(true);
+      const url = `${process.env.EXPO_PUBLIC_CONVEX_SITE}/sendImage?user=${encodeURIComponent(user!)}&group_id=${chatid!}&content=${encodeURIComponent(newMessage)}`;
+
+      const response = await fetch(selectedImage);
+      const blob = await response.blob();
+
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": blob.type!,
+        },
+        body: blob,
+      })
+        .then(() => {
+          setSelectedImage(null);
+          setNewMessage("");
+        })
+        .catch((error) => {
+          console.error("Error uploading image:", error);
+        })
+        .finally(() => {
+          setUploading(false);
+        });
     } else {
       addMessage({
         group_id: chatid as Id<"groups">,
@@ -98,6 +122,12 @@ const Page = () => {
         >
           {item.content}
         </Text>
+        {item.file && (
+          <Image
+            source={{ uri: item.file }}
+            style={{ width: 200, height: 200, borderRadius: 8, marginTop: 8 }}
+          />
+        )}
         <Text style={styles.timestamp}>
           {new Date(item._creationTime).toLocaleTimeString([], {
             hour: "2-digit",
@@ -181,6 +211,24 @@ const Page = () => {
           </View>
         </View>
       </KeyboardAvoidingView>
+      {uploading && (
+        <View
+          style={[
+            StyleSheet.absoluteFill,
+            {
+              backgroundColor: "rgba(0,0,0,0.4)",
+              justifyContent: "center",
+              alignItems: "center",
+            },
+          ]}
+        >
+          <ActivityIndicator
+            color="#fff"
+            animating
+            size="large"
+          ></ActivityIndicator>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
