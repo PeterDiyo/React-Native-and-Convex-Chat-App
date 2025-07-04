@@ -9,7 +9,8 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 
-// Container component
+// Container component for the dialog
+// It handles visibility and layout
 const DialogContainer: React.FC<{
   visible: boolean;
   children: React.ReactNode;
